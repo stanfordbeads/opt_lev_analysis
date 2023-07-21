@@ -1228,7 +1228,7 @@ def spatial_bin(drive, resp, dt, nbins=100, nharmonics=10, harms=[], \
     elif grad_sign > 0:
         ginds = grad[sortinds] > 0
     elif grad_sign == 0.0:
-        ginds = np.ones(len(grad[sortinds]), dtype=np.bool)
+        ginds = np.ones(len(grad[sortinds]), dtype=bool)
 
     bin_spacing = (maxdrive - mindrive) * (1.0 / nbins)
     drivevec = np.linspace(mindrive+0.5*bin_spacing, \
