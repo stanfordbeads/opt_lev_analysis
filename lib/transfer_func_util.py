@@ -211,7 +211,7 @@ def build_uncalibrated_H(fobjs, average_first=True, dpsd_thresh=None, mfreq = 1.
         fsamp = fobj.fsamp
         fft_fac = bu.fft_norm(N, fsamp)
 
-        drive = bu.trap_efield(fobj.electrode_data) #* constants.elementary_charge
+        drive = bu.trap_efield(fobj.electrode_data, new_trap=new_trap) #* constants.elementary_charge
         dfft = np.fft.rfft( drive ) * fft_fac
 
         if new_trap: 
@@ -579,7 +579,7 @@ def calibrate_H(Hout, vpn, step_cal_drive_channel=0, drive_freq=41., \
     ### Compute Vresponse / Vdrive on q = q0:
     npfreqs = np.array(freqs)
     freqs_to_avg = npfreqs[:ind]
-
+    print(f"Averaging over {freqs_to_avg[0]:.2f}Hz to {freqs_to_avg[-1]:.2f}Hz")
     resps = []
     for freq in freqs_to_avg:
         resps.append(np.abs(Hout[freq][j,j]))
@@ -594,7 +594,6 @@ def calibrate_H(Hout, vpn, step_cal_drive_channel=0, drive_freq=41., \
     ### correlation and the real part of this transfer function
     mean_resp = np.abs(Hout[freqs[ind]][j,j])
     # mean_resp = Hout[freqs[ind]][j,j].real
-
     q_tf = mean_resp / vpn
     e_charge = constants.elementary_charge
 
