@@ -24,9 +24,10 @@ ncore = 30
 # ncore = 1
 
 
-theory_base = '/home/cblakemore/opt_lev_analysis/gravity_sim/results/'
-theory_data_dir = os.path.join(theory_base, '7_6um-gbead_1um-unit-cells_master/')
-
+# theory_base = '/home/cblakemore/opt_lev_analysis/gravity_sim/results/'
+# theory_data_dir = os.path.join(theory_base, '7_6um-gbead_1um-unit-cells_master/')
+theory_base = '/home/gautam/gravityData/'
+theory_data_dir = os.path.join(theory_base, '10um-gbead_1um-unit-cells_master/')
 
 # data_dirs = ['/data/old_trap/20180625/bead1/grav_data/shield/X50-75um_Z15-25um_17Hz', \
 #              '/data/old_trap/20180625/bead1/grav_data/shield/X50-75um_Z15-25um_17Hz_elec-term', \
@@ -60,7 +61,7 @@ theory_data_dir = os.path.join(theory_base, '7_6um-gbead_1um-unit-cells_master/'
 # data_dirs = ['/data/new_trap_processed/mockfiles/20200320/output/noise/StBiN3/{:s}/'.format(arg1)]
 # data_dirs = ['/data/new_trap_processed/mockfiles/20200320/raw/noise/']
 # data_dirs = ['/data/new_trap_processed/mockfiles/20200320/output/noise/chas_tests/77/']
-data_dirs = ['/data/new_trap/20230330/Bead0/Gravity/2/']
+data_dirs = ['/data/new_trap/20230614/Bead0/Gravity/6/']
 new_trap = True
 
 
@@ -176,7 +177,7 @@ freq_pairing = 1
 # freq_pairing = 8
 # freq_pairing = 15
 no_discovery = True
-sum_by_sign = False
+sum_by_sign = True
 confidence_level = 0.95
 
 plot_tf = False
@@ -186,19 +187,19 @@ plot_basis = False
 plot_alpha_xyz = False
 plot_bad_alphas = False
 
-plot_mle_vs_time = False
-mle_vs_time_chunk_size = 500
+plot_mle_vs_time = True
+mle_vs_time_chunk_size = 50
 zoom_limits = ()
 # zoom_limits = (6.0, 6.5)
-plot_freqs = [18.0, 24.0, 33.0, 36.0]
-plot_freqs = [9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, \
-              30.0, 33.0, 36.0, 39.0]
+plot_freqs = [9.0, 15.0, 18.0, 24.0, 27.0, 33.0, 36.0] # Make sure you also change harms a few lines below...
+# plot_freqs = [9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, \
+#               30.0, 33.0, 36.0, 39.0]
 plot_alpha = 1.0
 
 ########### BAD CODE #############
 plot_chunked_mle_vs_time = False
 
-derp_save = True
+derp_save = False
 derp_file = '/home/cblakemore/tmp/20230330_mle_vs_time.p'
 # derp_file = '/home/cblakemore/tmp/20230330_noise_mle_vs_time.p'
 derp_key = 'naive'
@@ -217,26 +218,29 @@ plot_limit = True
 show_plots = False
 save_plots = True
 
-export_limit = True
-export_path = '/data/new_trap_processed/limits/20230330_limit_binning-10000.p'
+export_limit = False
+export_path = '/data/new_trap_processed/limits/20230614_noise-limit_binning-10000.p'
+export_path = '/home/gautam/limits/20230614_noise-limit_binning-10000.p'
 
 lambdas_to_plot =  [10.0e-6]
 # lambdas_to_plot = [5.0e-6, 10.0e-6]
 # lambdas_to_plot = [5.0e-6, 10.0e-6, 12.0e-6, 18.0e-6, 31.0e-6]
 
 limit_xlim = (5.0e-7, 1e-3)
-limit_ylim = (5e6, 1e14)
+limit_ylim = (1e6, 1e14)
 
 save_hists = False
 
 ### Position of bead relative to the attractor coordinate system
 p0_bead_dict = {'20200320': [392.0, 199.7, 42.37], \
-                '20230330': [31.0, 250.7, 42.65]}
+                '20230330': [31.0, 250.7, 42.65],
+                '20230614': [34.5, 250.7, 20.0]}
 
 # harms = [6]
 # harms = [3,4,5,6]
 # harms = [2,4,6,7,10,11,12,13]
-harms = [2,3,4,5,6,7,8,9,10,11,12,13]
+# harms = [2,3,4,5,6,7,8,9,10,11,12,13]
+harms = [3,5,6,8,9,11,12]
 # harms = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 # harms = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
 # harms = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29,30] # no 60 Hz
@@ -244,11 +248,11 @@ harms = [2,3,4,5,6,7,8,9,10,11,12,13]
 # harms = [2,3,4,5,6,7,8,9,10]
 # harms = []
 
-# fake_attractor_data = True
-fake_attractor_data = False
+fake_attractor_data = True
+# fake_attractor_data = False
 fake_attractor_data_freq = 3.0
-fake_attractor_data_amp = 0.5*202.11
-fake_attractor_data_dc = 194.92
+fake_attractor_data_amp = 0.5*175.22
+fake_attractor_data_dc = 250.7
 fake_attractor_data_axis = 1
 
 # fix_sep = True
@@ -368,7 +372,7 @@ for ddir in data_dirs:
         if save:
             agg_dat.save(agg_path)
 
-        agg_dat.bin_rough_stage_positions()
+        agg_dat.bin_rough_stage_positions(ax_disc=1.0)
         #agg_dat.average_resp_by_coordinate()
 
         # agg_dat.plot_force_plane(resp=0, fig_ind=1, show=True)
@@ -406,7 +410,7 @@ for ddir in data_dirs:
                                    harms=harms, new_trap=new_trap)
         agg_dat.load(agg_load_path)
 
-        agg_dat.bin_rough_stage_positions()
+        agg_dat.bin_rough_stage_positions(ax_disc=1.0)
         #agg_dat.average_resp_by_coordinate()
 
         if redo_alpha_fit:   
