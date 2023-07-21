@@ -109,7 +109,7 @@ def build_paths(dirname, opt_ext='', pardirs_in_name=1, new_trap=False):
                         + date + '_' + name + opt_ext + '.dict'
     alpha_arr_path = '/data/{:s}_trap_processed/alpha_arrs/'.format(newstr) \
                         + date + '_' + name + opt_ext + '.arr'
-    plot_dir = '/home/cblakemore/plots/{:s}/mod_grav/'.format(date)
+    plot_dir = '/home/analysis_user/plots/{:s}/mod_grav/'.format(date)
     if len(opt_ext):
         plot_dir = os.path.join(plot_dir, name + opt_ext)
 
@@ -2291,7 +2291,7 @@ class AggregateData:
 
 
     def plot_likelihood_ratio_histograms(self, show=True, save=False, yuklambda=10.0e-6,\
-                                         basepath='/home/cblakemore/plots/mod_grav'):
+                                         basepath='/home/analysis_user/plots/mod_grav'):
         '''Function to generate a bunch of histograms of the likelihood ratio statistics
            and compare them to chi-squared distributions.'''
         ax_dict = {0: 'X', 1: 'Y', 2: 'Z'}
@@ -2366,7 +2366,7 @@ class AggregateData:
 
 
     def plot_mle_histograms(self, show=True, save=False, yuklambda=10.0e-6, bins=20,\
-                            basepath='/home/cblakemore/plots/mod_grav'):
+                            basepath='/home/analysis_user/plots/mod_grav'):
         '''Function to generate a bunch of histograms of the alpha MLEs for 
            each harmonic and each axis.'''
         ax_dict = {0: 'X', 1: 'Y', 2: 'Z'}
@@ -2411,7 +2411,7 @@ class AggregateData:
 
 
     def plot_mle_vs_time(self, show=True, save=False, yuklambda=10.0e-6,\
-                         basepath='/home/cblakemore/plots/mod_grav', \
+                         basepath='/home/analysis_user/plots/mod_grav', \
                          plot_freqs=[], plot_alpha=1.0, chunk_size=0, \
                          file_length=10.0, xscale='hour', zoom_limits=()):
         '''Function to generate a time series of the raw alpha MLE and uncertainty.
@@ -2463,7 +2463,7 @@ class AggregateData:
                         uncertainties = []
                         tvec = []
                         nmeas = len(all_mles)
-                        nchunk = np.int(np.ceil(nmeas / chunk_size))
+                        nchunk = int(np.ceil(nmeas / chunk_size))
                         for k in range(nchunk):
                             k1 = k*chunk_size
                             k2 = (k+1)*chunk_size
@@ -3265,11 +3265,11 @@ class AggregateData:
 
 
     def plot_chunked_mle_vs_time(self, show=True, save=False, yuklambda=10.0e-6,\
-                                 basepath='/home/cblakemore/plots/mod_grav', \
+                                 basepath='/home/analysis_user/plots/mod_grav', \
                                  plot_freqs=[], plot_alpha=1.0, file_length=10.0, \
                                  confidence_level=0.95, xscale='hour', \
                                  derp_save=False, derp_key='', derp_nchunk=1, \
-                                 derp_file='/home/cblakemore/tmp/derp.p'):
+                                 derp_file='/home/analysis_user/tmp/derp.p'):
         '''Function to generate a time series of the raw alpha MLE and uncertainty.
            of that estimate for each harmonic.'''
         ax_dict = {0: 'X', 1: 'Y', 2: 'Z'}
@@ -3402,7 +3402,7 @@ class AggregateData:
     def plot_sum_likelihood_by_harm(self, yuklambda=10.0e-6, show=True, save=False, \
                                     include_limit=False, no_discovery=False, \
                                     confidence_level=0.95, ss=False, \
-                                    basepath='/home/cblakemore/plots/mod_grav'):
+                                    basepath='/home/analysis_user/plots/mod_grav'):
 
         ax_dict = {0: 'X', 1: 'Y', 2: 'Z'}
         if save:
@@ -3490,7 +3490,7 @@ class AggregateData:
     def plot_sum_likelihood(self, yuklambda=10.0e-6, show=True, save=False, \
                             include_limit=False, no_discovery=False, \
                             confidence_level=0.95, ss=False, \
-                            basepath='/home/cblakemore/plots/mod_grav'):
+                            basepath='/home/analysis_user/plots/mod_grav'):
 
         ax_dict = {0: 'X', 1: 'Y', 2: 'Z'}
         if save:
@@ -3588,7 +3588,7 @@ class AggregateData:
 
     def get_limit_from_likelihood_sum(self, confidence_level=0.95, no_discovery=False, \
                                       ss=False, xlim=(), ylim=(), save=False, show=True, \
-                                      basepath='/home/cblakemore/plots/mod_grav/', \
+                                      basepath='/home/analysis_user/plots/mod_grav/', \
                                       export_limit=False, \
                                       export_path='/data/old_trap_processed/limits/limit.p'):
 
@@ -4656,9 +4656,9 @@ class AggregateData:
                             if prefix[-1] != '_':
                                 prefix += '_'
 
-                            fig_path = '/home/cblakemore/plots/' + date + '/grids/' + prefix + save_title
+                            fig_path = '/home/analysis_user/plots/' + date + '/grids/' + prefix + save_title
 
-                            fig2_path = '/home/cblakemore/plots/' + date + '/dists/' + prefix + save_title
+                            fig2_path = '/home/analysis_user/plots/' + date + '/dists/' + prefix + save_title
 
 
                             startplot = time.time()
