@@ -37,10 +37,10 @@ tabor_ind = 3
 sort_by_index = False
 sort_time = True
 
-# new_trap = True
-new_trap = False
+new_trap = True
+# new_trap = False
 
-fucked_up_manual_electrode_mon_fac = 200
+fucked_up_manual_electrode_mon_fac = 100
 fucked_up_manual_electrode_indices_for_new_trap = [3,4]
 
 # step_cal_dir = ['/data/old_trap/20180613/bead1/discharge/fine2/']
@@ -109,19 +109,19 @@ step_cal_dir = [\
                 '/data/old_trap/20230327/bead1/discharge/fine_5/',\
                 # '/data/old_trap/20230327/bead1/discharge/fine_5_long/',\
                ]
-first_file = 0
+first_file = -30
 last_file = -1
 
 
-# step_cal_dir = ['/data/new_trap/20230330/Bead0/Discharge/FineDischarge_3/']
+step_cal_dir = ['/data/new_trap/20230614/Bead0/Discharge/FineDischarge_3/']
 # first_file = 0
 # last_file = -1
 
 skip_subdirectories = False
 
 # elec_channel_select = 3
-elec_channel_select = 0
-ecol = 3
+elec_channel_select = 3
+ecol = 0
 pcol = 0
 # pcol = 2
 # pcol = 2
@@ -160,9 +160,9 @@ fake_step_cal = False
 
 ## NEW TRAP
 # vpn = 1.796986e17 # for Z? I think?
-vpn = 1.627e11    # for X, likely
+vpn = 1.627e10    # for X, likely
 drive_freq = 71.0
-q0 = -28
+q0 = -10
 
 # save_discharge_plot = True
 # plot_residual_histograms = True
@@ -190,7 +190,7 @@ save_charge = False
 # tf_cal_dir = '/data/new_trap/20200110/Bead2/TransFunc/'
 # tf_cal_dir = '/data/new_trap/20200113/Bead1/TransFunc/'
 # tf_cal_dir = '/data/new_trap/20200320/Bead1/TransFunc/'
-tf_cal_dir = '/data/new_trap/20230330/Bead0/TransFunc/trapFocus/'
+tf_cal_dir = '/data/new_trap/20230614/Bead0/TransFunc/trapFocus/'
 
 tf_substr = ''
 # tf_substr = 'readjust'
@@ -202,12 +202,12 @@ plot_response = True
 
 zero_drive_phase = True
 skip_qpd = True
-lines_to_remove = []
+lines_to_remove = [60, 120, 180, 240, 300] # power line harmonics...
 # lines_to_remove = [7.0, 35.0, 60.0, 98, 420.0, 490.0]
 fit_freqs = [1.0, 600.0]
 
 ### Threshold for drive signal identification in (V^2 / Hz)
-dpsd_thresh = 6.5
+dpsd_thresh = 10#6.5
 
 amp_xlim = (4, 750)
 amp_ylim = ()
@@ -222,9 +222,10 @@ plot_off_diagonal = False
 ### Matrix specifying which elements of the transfer function
 ### to interpolate. If not interpolated, fits a simple harmonic
 ### oscillator to the response
-interps = [[1,1,1], \
-           [1,1,1], \
-           [1,1,1]]
+# interps = [[1,1,1], \
+#            [1,1,1], \
+#            [1,1,1]]
+interps = np.zeros((3,3))
 
 ### Matrices specifying the phase processing behavior, i.e. do
 ### we try a real unwrap like np.unwrap(), or do some stupid shit
@@ -241,8 +242,8 @@ smoothing = 50
 plot_inverse_tf = False
 suppress_off_diag = True
 
-save_tf_plot = True
-# save_tf_plot = False
+# save_tf_plot = True
+save_tf_plot = False
 
 
 #####################################
@@ -395,7 +396,6 @@ if not fake_step_cal:
         try:
             if new_trap:
                 df.load_new(filname)
-
                 elec_data = np.zeros((8, df.nsamp))
                 for i, j in enumerate(fucked_up_manual_electrode_indices_for_new_trap):
                     elec_data[j,:] += df.electrode_data[i]
@@ -470,7 +470,7 @@ if not fake_step_cal:
                                      residual_limit=residual_limit, \
                                      save_discharge_plot=save_discharge_plot, \
                                      date=step_date)
-    print(vpn)
+    print(f"Calibration factor is {vpn} cts/N")
 else:
     pcol_actual = 0 
 
@@ -508,6 +508,7 @@ for fil_ind, filname in enumerate(tf_cal_files):
         # plt.show()
         # input()
         df.electrode_data = np.copy(elec_data)
+        # df.electrode_data = np.copy(elec_data) / fucked_up_manual_electrode_mon_fac
 
     else:
         df.load(filname)
@@ -531,7 +532,7 @@ keys = np.array(list(Hout.keys()))
 keys.sort()
 close_freq = keys[ np.argmin(np.abs(keys - drive_freq)) ]
 # print(vpn, pcol, Hout[close_freq][2,2])
-
+print(f"Calibrating drive channel {pcol}")
 Hcal, q = tf.calibrate_H(Hout, vpn, step_cal_drive_channel=pcol_actual, \
                             drive_freq=drive_freq, verbose=True)
 
