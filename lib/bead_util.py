@@ -446,7 +446,8 @@ class DataFile:
         self.p_trans = data_dict['p_trans']
         self.electrode_data = data_dict['electrode_data']
 
-        self.nsamp = len(self.pos_data[0])
+        # self.nsamp = len(self.pos_data[0])
+        self.nsamp = len(self.amp[0])
 
         self.time = self.pos_time[0]
 
@@ -563,8 +564,7 @@ class DataFile:
         self.pos_data_3 = np.array([x2.astype(np.float64)/quad_sum, \
                                     y2.astype(np.float64)/quad_sum, \
                                     self.phase[4]])
-
-        # self.pos_data = np.copy(self.pos_data_3)
+        self.pos_data = np.copy(self.pos_data_3)
 
 
 
@@ -771,7 +771,7 @@ class DataFile:
                     self.build_drive_filt(drivefft, freqs, nharmonics=nharmonics, \
                                           harms=harms, width=width, maxfreq=maxfreq)
 
-        all_inds = np.arange(len(freqs)).astype(np.int)
+        all_inds = np.arange(len(freqs)).astype(int)
         drive_ginds = []
         if include_mean:
             drive_ginds.append(0)
@@ -784,7 +784,7 @@ class DataFile:
 
         # Apply filter by indexing with a boolean array
         bool_ginds = drivefilt > 0
-        ginds = np.arange(len(drivefilt)).astype(np.int)[bool_ginds]
+        ginds = np.arange(len(drivefilt)).astype(int)[bool_ginds]
 
         outdic = {'ginds': ginds, 'fund_ind': fund_ind, 'drive_freq': drive_freq, \
                   'drive_ind': drive_ind, 'drive_ginds': drive_ginds}
@@ -814,7 +814,7 @@ class DataFile:
                     self.build_drive_filt(drivefft, freqs, nharmonics=nharmonics, \
                                           harms=harms, width=width, maxfreq=maxfreq)
 
-        all_inds = np.arange(len(freqs)).astype(np.int)
+        all_inds = np.arange(len(freqs)).astype(int)
         drive_ginds = []
         if include_mean:
             drive_ginds.append[0]
@@ -827,7 +827,7 @@ class DataFile:
 
         # Apply filter by indexing with a boolean array
         bool_ginds = drivefilt > 0
-        ginds = np.arange(len(drivefilt)).astype(np.int)[bool_ginds]
+        ginds = np.arange(len(drivefilt)).astype(int)[bool_ginds]
 
         outdic = {'ginds': ginds, 'fund_ind': fund_ind, 'drive_freq': drive_freq, \
                   'drive_ind': elec_ind, 'drive_ginds': drive_ginds}
@@ -854,10 +854,12 @@ class DataFile:
         ''' 
 
 
-        freqs = np.fft.rfftfreq(len(self.pos_data[0]), d=1.0/self.fsamp)
+        # freqs = np.fft.rfftfreq(len(self.pos_data[0]), d=1.0/self.fsamp)
+        freqs = np.fft.rfftfreq(self.nsamp, d=1.0/self.fsamp)
         fund_ind = np.argmin(np.abs(freqs - drive_freq))
         bin_sp = freqs[1] - freqs[0]
-
+        # print("")
+        
         harm_freqs = freqs[ginds]
 
         if type(harm_freqs) == np.float64:
@@ -1115,6 +1117,87 @@ class DataFile:
 
 
     def diagonalize(self, date='', maxfreq=1000, suppress_off_diag=False,\
+                    step_cal_drive_freq=41.0, plot=False, adjust_phase=False,\
+                    adjust_phase_dict={}):
+        '''Diagonalizes data, adding a new attribute to the DataFile object.
+
+           INPUTS: date, date in form YYYYMMDD if you don't want to use
+                         default TF from file date
+                   interpolate, boolean specifying whether to use an 
+                                interpolating function or fit to damped HO
+                   maxfreq, max frequency above which data is top-hat filtered
+
+           OUTPUTS: none, generates new class attribute.'''
+
+        if self.new_trap:
+            tf_path = '/data/new_trap_processed/calibrations/transfer_funcs/'
+        else:
+            tf_path = '/data/old_trap_processed/calibrations/transfer_funcs/'
+
+        # Load the transfer function. Note that this Hfunc maps
+        # drive -> response, so we will need to invert
+        try:
+            fil_TF = h5py.File(f"{tf_path}/20230614/TF.h5",'r')
+        except Exception:
+            print("Couldn't automatically find correct TF")
+            traceback.print_exc()
+            return
+
+        ### Generate FFT frequencies for given data
+        N = len(self.amp[0])
+        freqs = np.fft.rfftfreq(N, d=1.0/self.fsamp)
+
+        ### Compute TF at frequencies of interest. Appropriately inverts
+        ### so we can map response -> drive
+        Harr = np.zeros((len(freqs), 3, 3), dtype=complex)
+        Harr[:,0,0] = 1/signal.freqs_zpk(fil_TF['fits/zXX'], 
+            fil_TF['fits/pXX'], fil_TF['fits/kXX']/fil_TF.attrs['scaleFactors'][0], 2*np.pi*freqs)[1]
+        Harr[:,1,1] = 1/signal.freqs_zpk(fil_TF['fits/zYY'], 
+            fil_TF['fits/pYY'], fil_TF['fits/kYY']/fil_TF.attrs['scaleFactors'][1], 2*np.pi*freqs)[1]
+        Harr[:,2,2] = 1/signal.freqs_zpk(fil_TF['fits/zZZ'], 
+            fil_TF['fits/pZZ'], fil_TF['fits/kZZ']/fil_TF.attrs['scaleFactors'][2], 2*np.pi*freqs)[1]
+        fil_TF.close()
+
+        if plot:
+            tf.plot_tf_array(freqs, Harr)
+            input()
+
+        # Only apply the TF to frequencies below some frequency
+        # Since the TF is usually only measured out to 700 Hz, 
+        # it's reasonable for this to be 1 kHz.
+        maxfreq_ind = np.argmin( np.abs(freqs - maxfreq) )
+        Harr[maxfreq_ind+1:,:,:] = 0.0+0.0j
+
+        f_ind = np.argmin( np.abs(freqs - step_cal_drive_freq) )
+        mat = Harr[f_ind,:,:]
+        conv_facs = [0, 0, 0]
+        for i in [0,1,2]:
+            conv_facs[i] = np.abs(mat[i,i])
+        self.conv_facs = conv_facs
+
+        ### Compute the FFT, apply the TF and inverse FFT
+        if self.new_trap:
+            data = self.pos_data_3
+        else:
+            data = self.pos_data
+        data_fft = np.fft.rfft(data)
+        diag_fft = np.einsum('ikj,ki->ji', Harr, data_fft)
+        nan_inds = np.isnan(diag_fft)
+        diag_fft[nan_inds] = 0.0+0.0j
+
+        if plot:
+            norm = fft_norm(N, self.fsamp)
+            fig, axarr = plt.subplots(3,1,sharex=True,sharey=True)
+            for ax in [0,1,2]:
+                axarr[ax].loglog(freqs, norm*np.abs(data_fft[ax])*conv_facs[ax])
+                axarr[ax].loglog(freqs, norm*np.abs(diag_fft[ax]))
+            plt.tight_layout()
+            plt.show()
+
+        self.diag_pos_data = np.fft.irfft(diag_fft)
+
+
+    def diagonalize_old(self, date='', maxfreq=1000, suppress_off_diag=False,\
                     step_cal_drive_freq=41.0, plot=False, adjust_phase=False,\
                     adjust_phase_dict={}):
         '''Diagonalizes data, adding a new attribute to the DataFile object.
