@@ -11,6 +11,7 @@ attractor_params = {}
 ### Material densities in kg/m^3
 attractor_params['rho_gold'] = 19300.0
 attractor_params['rho_silicon'] = 2532.59
+attractor_params['rho_black'] = 21450.0
 
 
 ### Properties of the attractor, SI (mks) units
@@ -26,9 +27,10 @@ attractor_params['height'] = 10.0e-6
 attractor_params['finger_length'] = 80.0e-6
 
 attractor_params['silicon_bridge'] = 2.0e-6
-attractor_params['include_bridge'] = True
+attractor_params['include_bridge'] = False
 
-
+attractor_params['black_height'] = 3.0e-6
+attractor_params['include_black'] = True
 
 ##################################################################
 ##################################################################
@@ -59,16 +61,19 @@ def density_symmetric(x, y, z):
 
     ### Establish the easy cases first, returning the appropriate value
     ### and hopefully decreasing runtime
+    black = attractor_params['black_height']
+    black_bool = attractor_params['include_black']
     h = attractor_params['height']
     wtot = attractor_params['total_width']
     within_x = x < 0
-    within_z = np.abs(z) < 0.5 * h
+    within_z = np.abs(z) < 0.5 * h + (black*black_bool)
     within_y = np.abs(y) < 0.5 * wtot
     if not (within_x and within_y and within_z):
         return 0.0
 
     rhog = attractor_params['rho_gold']
     rhos = attractor_params['rho_silicon']
+    rhob = attractor_params['rho_black']
 
     wg = attractor_params['width_goldfinger']
     ws = attractor_params['width_siliconfinger']
@@ -76,7 +81,7 @@ def density_symmetric(x, y, z):
     l = attractor_params['finger_length']
     b = attractor_params['silicon_bridge']
     b_bool = attractor_params['include_bridge']
-
+    
     ### Boolean flags for various locations 
     central_finger = (np.abs(y) < 0.5 * wg)
     back_bar = ( np.abs(x) < (l + b*b_bool + wg)) \
@@ -84,8 +89,11 @@ def density_symmetric(x, y, z):
     bridge = b_bool and (x < 0) and (np.abs(x) < b)
     outer = (np.abs(y) > (0.5 * wtot - wo))
     silicon_bulk = np.abs(x) > (l + wg + b*b_bool)
+    black = np.abs(z) > 0.5*h
 
     #### Return the right density value baed on the boolean flags
+    if black:
+        return rhob
     if (central_finger and not bridge) or (back_bar and not outer):
         return rhog
     elif bridge or outer or silicon_bulk:
@@ -156,7 +164,7 @@ def plot_xy_density(zpos=0.0, x_range=(-599.5e-6, 10.0e-6), dx=1.0e-6, \
     ### Build the x and y arrays for plotting
     xx = np.arange(x_range[0], x_range[1], dx)
     yy = np.arange(y_range[0], y_range[1], dy)
-    rho_grid = np.zeros((xpts, ypts))
+    rho_grid = np.zeros((len(xx), len(yy)))
 
     ### Shitty slow for loops. The density function is hard to vectorize
     ### given the somewhat complex structure of the attractor

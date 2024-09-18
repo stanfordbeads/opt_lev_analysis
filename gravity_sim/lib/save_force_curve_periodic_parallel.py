@@ -19,15 +19,15 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 
 ncore = 20
-verbose = False
+verbose = True
 
 ### Parameter list to simulate
 # rbeads = np.array([2.35e-6])  # Bangs
-rbeads = np.array([3.78e-6])#, 2.32e-6])  # German
-# rbeads = np.array([7.5e-6])
-seps = np.arange(1.0e-6, 25.5e-6, 1.0e-6)
+# rbeads = np.array([3.78e-6])#, 2.32e-6])  # German
+rbeads = np.array([7.5e-6])
+seps = np.arange(1.0e-6, 25.5e-6, 5.0e-6)
 # seps = np.arange(2.0e-6, 10.5e-6, 1.0e-6)
-heights = np.arange(-25.0e-6, 25.5e-6, 1.0e-6)
+heights = np.arange(-25.0e-6, 25.5e-6, 5.0e-6)
 
 ### Attractor properties in case they need to be adjusted
 density.attractor_params['include_bridge'] = True
@@ -49,8 +49,8 @@ include_edge = True
 dxyz = 1.0e-6
 x_range = (-199.5e-6, 0e-6)
 y_range = (-249.5e-6, 250e-6)
-z_range = (-3.5e-6, 4e-6)
-# z_range = (-4.5e-6, 5e-6)
+z_range = (-6.5e-6, 7e-6)
+# z_range = (-7.5e-6, 8e-6)
 xx, yy, zz, rho = \
     density.build_3d_array(x_range=x_range, dx=dxyz, \
                            y_range=y_range, dy=dxyz, \
@@ -67,13 +67,13 @@ rhobead = 1850.0
 # rhobead = 1550.0
 
 ### Define values of the Yukawa lambda parameter to simulate
-lambdas = np.logspace(-6.7, -3, 150)
+lambdas = np.logspace(-6.7, -3, 3)
 lambdas = lambdas[::-1]
 
 ### Y-points over which to compute the result
 travel = 500.0e-6
 cent = 0.0e-6
-Npoints = 1000
+Npoints = 200
 
 bead_dx = travel / Npoints
 beadposvec = np.linspace(cent - 0.5*travel + bead_dx, \
